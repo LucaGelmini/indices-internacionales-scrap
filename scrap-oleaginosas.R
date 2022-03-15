@@ -53,22 +53,17 @@ boton_evo_p_ext$clickElement()
 boton_oleaginosas_years <- driver$findElement(using = 'link text', value = 'Oleaginosas (Mensual en u$s-tn)')
 boton_oleaginosas_years$clickElement()
 
-caja_years_oleaginosas <- driver$findElement(using = 'id', value = 'collapsee9829117d9288d8fb980211b3ad720f5')
+oleaginosas_years <- driver$findElements(using = 'css selector',
+                                             value = '#collapsee9829117d9288d8fb980211b3ad720f5 .panel-group div a')
+oleaginosas_years[[5]]$clickElement()
 
-hay_siguiente_year <- TRUE
+
 year_inicial = 2015
 
-while (hay_siguiente_year) {
-  tryCatch(
-    {
-      oleaginosas_years <- caja_years_oleaginosas$findElement(using = 'link text', value = f({year_inicial}))
-      year_inicial <- year_inicial + 1
-      oleaginosas_years$clickElement()
-    },
-    error = function(cond){
-      hay_siguiente_year=FALSE
-    }
-  )
+length(oleaginosas_years[1])
+
+for (link in oleaginosas_years) {
+  link$clickElement()
 }
 
 
