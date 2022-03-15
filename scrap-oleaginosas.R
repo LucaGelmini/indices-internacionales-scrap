@@ -62,8 +62,11 @@ year_inicial = 2015
 
 length(oleaginosas_years[1])
 
-for (link in oleaginosas_years) {
-  link$clickElement()
+for (idx in 1:length(oleaginosas_years)) {
+  if (idx%%2 !=0){
+    oleaginosas_years[[idx]]$clickElement()
+    }
+  
 }
 
 
