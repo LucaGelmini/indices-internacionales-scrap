@@ -64,12 +64,8 @@ Sys.sleep(1)
 
 oleaginosas_years <- driver$findElements(using = 'css selector',
                                              value = '#collapsee9829117d9288d8fb980211b3ad720f5 .panel-group div a')
-oleaginosas_years[[5]]$clickElement()
+
 Sys.sleep(1)
-
-year_inicial = 2015
-
-length(oleaginosas_years[1])
 
 for (idx in 1:length(oleaginosas_years)) {
   if (idx%%2 !=0){

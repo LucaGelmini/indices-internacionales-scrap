@@ -13,6 +13,7 @@ library(glue)
 library(dplyr) #Para calcular la variación mensual
 library(jsonlite)
 library(plotly)
+library(eList)
 
 # Abrir y maximizar link --------------------------------------------------
 
@@ -41,32 +42,73 @@ driver$maxWindowSize() # Maximiza a janela do navegador
 
 # Precios internacionales -------------------------------------------------
 
-Sys.sleep(4)
+Sys.sleep(2)
 
 boton_p_int <- driver$findElement(using = 'link text', value = 'Precios Internacionales')
 boton_p_int$clickElement()
+Sys.sleep(1)
 
 boton_evo_p_ext <- driver$findElement(using = 'link text',
-                                      value = 'Evoluci�n de los Precios Externos')
+                                      value = 'Evolución de los Precios Externos')
 boton_evo_p_ext$clickElement()
+Sys.sleep(1)
+
 
 boton_oleaginosas_years <- driver$findElement(using = 'link text', value = 'Oleaginosas (Mensual en u$s-tn)')
 boton_oleaginosas_years$clickElement()
+Sys.sleep(1)
+
 
 oleaginosas_years <- driver$findElements(using = 'css selector',
                                              value = '#collapsee9829117d9288d8fb980211b3ad720f5 .panel-group div a')
-oleaginosas_years[[5]]$clickElement()
+
+#Hago una lista con todos los href de cada año
+table_links <- lapply(oleaginosas_years,function(year) year$getElementAttribute('href'))
+table_links <- table_links[seq(1, length(table_links), 2)] #Me quedo solo con los impares porque se repiten
+#Hago lo mismo que antes pero con el texto de los <a>, es decir los años
+table_links_years <- lapply(oleaginosas_years,function(year) year$getElementText())
+table_links_years <- table_links_years[seq(1, length(table_links_years), 2)]
 
 
-year_inicial = 2015
+# Read html table (function)--------------------------------------------------------------
 
-length(oleaginosas_years[1])
 
-for (idx in 1:length(oleaginosas_years)) {
-  if (idx%%2 !=0){
-    oleaginosas_years[[idx]]$clickElement()
-    }
+read_html_table <- function(link, Año){
+  content <- read_html(link)
+  tablas <- content %>% html_table(fill = T)
+  first_table <- tablas[[length(tablas)]]
+  first_table <- first_table[-1,]
   
+  
+  first_table_header <- first_table[-c(3:length(first_table)+1), ]
+  
+  first_table_header <- rbind(first_table_header, row3 = apply(first_table_header, 2, paste0, collapse = "-"))
+  
+  tabla <- (rbind(first_table_header[-c(1:3),], first_table[-c(1:4),]))
+  
+  names(tabla) <- as.matrix(tabla[1, ])
+  tabla <- tabla[-1, ]
+  tabla[] <- lapply(tabla, function(x) type.convert(as.character(x)))
+  
+  colnames(tabla)[1] <- 'Mes'
+  
+  tabla$Mes <- 1:nrow(tabla)
+  
+  Año <- as.integer(Año)
+  
+  tabla$Año <- rep.int(Año, length(tabla$Mes))
+  tabla$Fecha <- lapply(tabla$Mes, function(mes) paste(Año, mes, "01", sep = "-")) %>%
+    unlist %>%
+    as.Date()
+  return (tabla[, c(16, 1, 17, 2:15)])
 }
 
 
+# Loop de lectura de tablas -----------------------------------------------
+
+
+lista_de_tablas <-  List(for (idx in 1:length(table_links)) read_html_table(toString(table_links[[idx]]), table_links_years))
+  
+
+
+driver$close()
