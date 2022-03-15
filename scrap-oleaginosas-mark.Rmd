@@ -1,6 +1,11 @@
-
-# WD y librerías  --------------------------------------------------------------------
-
+---
+title: "Scrap-oleaginosas-rmark"
+author: "INDEC"
+date: "15/3/2022"
+output: html_document
+---
+## Librerías
+```{r}
 setwd("./instalacion selenium r") # Inserir caminho
 system("java -jar selenium-server-standalone-4.0.0-alpha-1.jar", wait = FALSE) # Declara selenium
 system("chromedriver.exe", wait = FALSE) # Declara chromedriver
@@ -10,15 +15,16 @@ library(tidyverse)
 library(lubridate)
 library(rvest)
 library(glue)
-library(dplyr) #Para calcular la variación mensual
+library(dplyr) #Para calcular la variaciÃ³n mensual
 library(jsonlite)
 library(plotly)
 
-# Abrir y maximizar link --------------------------------------------------
-
+```
+## Scrap
+```{r}
 link = "https://www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/areas/granos/index.php"
 
-#tarda unos segundos en cargar
+
 eCaps <- list(
   chromeOptions = 
     list(prefs = list("profile.default_content_settings.popups" = 0L,
@@ -36,27 +42,30 @@ driver <- remoteDriver(remoteServerAddr = "localhost",
 driver$open() # Abre navegador/browser
 
 driver$navigate(link) # Navega pelo link
-driver$maxWindowSize() # Maximiza a janela do navegador
+driver$maxWindowSize() # Maximiza a janela do navegador      
+         
+```
 
-
-# Precios internacionales -------------------------------------------------
-
+```{r}
 Sys.sleep(4)
 
 boton_p_int <- driver$findElement(using = 'link text', value = 'Precios Internacionales')
 boton_p_int$clickElement()
+Sys.sleep(1)
 
 boton_evo_p_ext <- driver$findElement(using = 'link text',
-                                      value = 'Evoluci�n de los Precios Externos')
+                                      value = 'Evolución de los Precios Externos')
 boton_evo_p_ext$clickElement()
+Sys.sleep(1)
 
 boton_oleaginosas_years <- driver$findElement(using = 'link text', value = 'Oleaginosas (Mensual en u$s-tn)')
 boton_oleaginosas_years$clickElement()
+Sys.sleep(1)
 
 oleaginosas_years <- driver$findElements(using = 'css selector',
                                              value = '#collapsee9829117d9288d8fb980211b3ad720f5 .panel-group div a')
 oleaginosas_years[[5]]$clickElement()
-
+Sys.sleep(1)
 
 year_inicial = 2015
 
@@ -69,4 +78,5 @@ for (idx in 1:length(oleaginosas_years)) {
   
 }
 
+```
 
