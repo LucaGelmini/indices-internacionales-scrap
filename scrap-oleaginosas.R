@@ -105,10 +105,11 @@ read_html_table <- function(link, Año){
 
 
 # Loop de lectura de tablas -----------------------------------------------
+toString(table_links[[5]])
 
-
-lista_de_tablas <-  List(for (idx in 1:length(table_links)) read_html_table(toString(table_links[[idx]]), table_links_years))
+lista_de_tablas <-  List(for (idx in 1:length(table_links)) read_html_table(toString(table_links[[idx]]), table_links_years[[idx]]))
   
 
 
 driver$close()
+
