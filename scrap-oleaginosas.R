@@ -1,5 +1,5 @@
 
-# WD y librerías  --------------------------------------------------------------------
+# WD y librerÃ­as  --------------------------------------------------------------------
 
 setwd("./instalacion selenium r") # Inserir caminho
 system("java -jar selenium-server-standalone-4.0.0-alpha-1.jar", wait = FALSE) # Declara selenium
@@ -49,7 +49,7 @@ boton_p_int$clickElement()
 Sys.sleep(1)
 
 boton_evo_p_ext <- driver$findElement(using = 'link text',
-                                      value = 'Evolución de los Precios Externos')
+                                      value = 'EvoluciÃ³n de los Precios Externos')
 boton_evo_p_ext$clickElement()
 Sys.sleep(1)
 
@@ -62,10 +62,10 @@ Sys.sleep(1)
 oleaginosas_years <- driver$findElements(using = 'css selector',
                                              value = '#collapsee9829117d9288d8fb980211b3ad720f5 .panel-group div a')
 
-#Hago una lista con todos los href de cada Año
+#Hago una lista con todos los href de cada AÃ±o
 table_links <- lapply(oleaginosas_years,function(year) year$getElementAttribute('href'))
 table_links <- table_links[seq(1, length(table_links), 2)] #Me quedo solo con los impares porque se repiten
-#Hago lo mismo que antes pero con el texto de los <a>, es decir los Años
+#Hago lo mismo que antes pero con el texto de los <a>, es decir los AÃ±os
 table_links_years <- lapply(oleaginosas_years,function(year) year$getElementText())
 table_links_years <- table_links_years[seq(1, length(table_links_years), 2)]
 
@@ -73,7 +73,7 @@ table_links_years <- table_links_years[seq(1, length(table_links_years), 2)]
 # Read html table (function)--------------------------------------------------------------
 
 
-read_html_table <- function(link, Año){
+read_html_table <- function(link, AÃ±o){
   content <- read_html(link)
   tablas <- content %>% html_table(fill = T)
   first_table <- tablas[[length(tablas)]]
@@ -94,10 +94,10 @@ read_html_table <- function(link, Año){
   
   tabla$Mes <- 1:nrow(tabla)
   
-  Año <- as.integer(Año)
+  AÃ±o <- as.integer(AÃ±o)
   
-  tabla$Año <- rep.int(Año, length(tabla$Mes))
-  tabla$Fecha <- lapply(tabla$Mes, function(mes) paste(Año, mes, "01", sep = "-")) %>%
+  tabla$AÃ±o <- rep.int(AÃ±o, length(tabla$Mes))
+  tabla$Fecha <- lapply(tabla$Mes, function(mes) paste(AÃ±o, mes, "01", sep = "-")) %>%
     unlist %>%
     as.Date()
   return (tabla[, c(16, 1, 17, 2:15)])

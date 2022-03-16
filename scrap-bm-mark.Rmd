@@ -103,7 +103,7 @@ Hay que ver qué se quiere graficar. El gas natural licuado es una buena opción
 ## Gráficos
 
 ```{r fig.width=9, fig.height=6}
-plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM$`Natural gas, US ($/mmbtu)`, name = 'US', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
+plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM_DF$'Natural gas, US ($/mmbtu)', name = 'US', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
   add_trace(y = ~BM_DF$`Natural gas, Europe ($/mmbtu)` , name = 'Europe', mode = 'lines', connectgaps = T) %>%
   add_trace(y = ~BM_DF$`Liquefied natural gas, Japan ($/mmbtu)`, name = 'Japón (gnl)', mode = 'lines', connectgaps = T)%>%
   layout(title = "Precio gas natural (dol/mmbtu)",
