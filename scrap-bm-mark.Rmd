@@ -1,0 +1,119 @@
+---
+title: "Scrap Banco Mundial"
+author: "INDEC"
+date: "15/3/2022"
+output: html_document
+---
+
+Scraping [Banco Mundial](https://www.worldbank.org/en/research/commodity-markets#1).
+
+## Librerías
+
+```{r librerías, echo=T, message=FALSE, warning=FALSE, results='hide'}
+library(RSelenium)
+library(tidyverse)
+library(lubridate)
+library(rvest)
+library(glue)
+library(dplyr) #Para calcular la variación mensual
+library(jsonlite)
+library(plotly)
+library(readxl)
+```
+
+## Servidor
+
+```{r abrir_navegador, echo = T, results = 'hide'}
+link = "https://www.worldbank.org/en/research/commodity-markets#1"
+
+eCaps <- list(
+  chromeOptions = 
+    list(prefs = list("profile.default_content_settings.popups" = 0L,
+"download.prompt_for_download" = FALSE,
+"directory_upgrade" = TRUE,
+"download.default_directory" = getwd() %>% str_replace_all("/", "\\\\"))
+  )
+)
+
+
+driver <- remoteDriver(remoteServerAddr = "localhost", 
+                      browserName = "chrome",
+                      extraCapabilities = eCaps) # Inicia o driver
+
+driver$open() # Abre navegador/browser
+
+driver$navigate(link) # Navega pelo link
+driver$maxWindowSize() # Maximiza a janela do navegador
+```
+
+```{r}
+boton_p_mensuales<- driver$findElement(using = 'link text', value = 'Monthly prices')
+boton_p_mensuales$clickElement()
+Sys.sleep(5)
+```
+
+## Wrangling
+
+Nos interesan algunos de los datos. No todos.
+
+-   Importamos el excel descargado.
+
+-   Eliminamos las primeras 4 filas.
+
+-   Concatenar las dos primeras filas para que aparezca la unidad de medida.
+
+-   Modificar el nombre de la primera columna, "Fecha".
+
+-   Eliminar todos los M que hacen referencia al mes por "-" para luego agregarle "-01" y así convertirlo a un formato fecha manipulable.
+
+```{r abrir_navegador, echo = T, results = 'hide'}
+BM <- read_excel("./CMO-Historical-Data-Monthly.xlsx", sheet = "Monthly Prices", skip = 4, col_names = F)
+BM_header <- BM[c(1,2), ]
+BM_header <- rbind(BM_header, row3 = apply(BM_header, 2, paste0, collapse = " "))
+
+BM_DF <- rbind(BM_header[-c(1:2),], BM[-c(1:3),])
+
+  
+names(BM_DF) <- as.matrix(BM_DF[1, ])
+BM_DF <- BM_DF[-1, ]
+BM_DF[] <- lapply(BM_DF, function(x) type.convert(as.character(x)))
+  
+colnames(BM_DF)[1] <- 'Fecha'
+
+BM_DF$Fecha <- str_replace(BM_DF$Fecha, "M", "-")
+BM_DF$Fecha <- lapply(BM_DF$Fecha, function(mes) paste(mes, "01", sep = "-")) %>%
+  unlist %>%
+  as.Date()
+
+```
+
+## Outliers
+
+Hay que ver qué se quiere graficar. El gas natural licuado es una buena opción para empezar.
+
+```{r fig.width=11, fig.height=8}
+# ggplot(data = BM_DF) + 
+#   geom_boxplot(mapping = aes(x = Mercado, y = Precio, fill = Mercado)) + 
+#   facet_wrap(~ Producto, nrow = 2) +
+#   theme_light()+
+#   theme(legend.position="none")
+#   
+```
+
+## Gráficos
+
+```{r fig.width=9, fig.height=6}
+plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM$`Natural gas, US ($/mmbtu)`, name = 'US', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
+  add_trace(y = ~BM_DF$`Natural gas, Europe ($/mmbtu)` , name = 'Europe', mode = 'lines', connectgaps = T) %>%
+  add_trace(y = ~BM_DF$`Liquefied natural gas, Japan ($/mmbtu)`, name = 'Japón (gnl)', mode = 'lines', connectgaps = T)%>%
+  layout(title = "Precio gas natural (dol/mmbtu)",
+         xaxis = list(title = "Fecha"),
+         yaxis = list (title = "U$D / mmbtu"))
+```
+
+Cerrar Chrome y eliminar el excel.
+
+```{r}
+unlink("CMO-Historical-Data-Monthly")
+driver$close()
+```
