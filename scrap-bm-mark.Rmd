@@ -23,7 +23,7 @@ library(readxl)
 
 ## Servidor
 
-```{r abrir_navegador, echo = T, results = 'hide'}
+```{r , echo = T, results = 'hide'}
 link = "https://www.worldbank.org/en/research/commodity-markets#1"
 
 eCaps <- list(
