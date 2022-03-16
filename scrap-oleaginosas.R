@@ -71,7 +71,29 @@ table_links_years <- table_links_years[seq(1, length(table_links_years), 2)]
 
 
 # Read html table (function)--------------------------------------------------------------
-
+tabla_ppal <- function(link){
+  pagina <- read_html(toString(link))
+  ptablas <- html_element(pagina, '.tabla')
+  filas <- ptablas%>%
+    html_elements('td')%>%
+    html_text()%>%
+    unlist()
+  
+  meses <- c('ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE')
+  
+  filas <- List(for (idx in 1:length(filas)){
+    if(filas[[idx]] %in% meses){
+      List(for(idx2 in idx:(idx+14)) filas[[idx2]])
+    }
+  })
+  ##traspongo filas
+  #columnas <- List(for(idx in 1:14)
+  #  List(for(fila in filas)fila[[idx]])
+  #)
+  
+  
+  return(data.frame(Reduce(rbind, filas)))
+}
 
 read_html_table <- function(link, Año){
   content <- read_html(link)
@@ -81,10 +103,11 @@ read_html_table <- function(link, Año){
   
   
   first_table_header <- first_table[-c(3:length(first_table)+1), ]
+  first_table_header<-rbind(first_table_header, row3 = apply(first_table_header, 2, paste0, collapse = "-"))
   
-  first_table_header <- rbind(first_table_header, row3 = apply(first_table_header, 2, paste0, collapse = "-"))
+
   
-  tabla <- (rbind(first_table_header[-c(1:3),], first_table[-c(1:4),]))
+  tabla <- (rbind(first_table_header[-c(1:3),], tabla_ppal(link = link)))
   
   names(tabla) <- as.matrix(tabla[1, ])
   tabla <- tabla[-1, ]
@@ -108,7 +131,7 @@ read_html_table <- function(link, Año){
 toString(table_links[[5]])
 
 lista_de_tablas <-  List(for (idx in 1:length(table_links)) read_html_table(toString(table_links[[idx]]), table_links_years[[idx]]))
-  
+
 
 
 driver$close()
