@@ -1,5 +1,5 @@
 
-# WD y librerías  --------------------------------------------------------------------
+# WD y librer�as  --------------------------------------------------------------------
 
 setwd("./instalacion selenium r") # Inserir caminho
 system("java -jar selenium-server-standalone-4.0.0-alpha-1.jar", wait = FALSE) # Declara selenium
@@ -49,7 +49,7 @@ boton_p_int$clickElement()
 Sys.sleep(1)
 
 boton_evo_p_ext <- driver$findElement(using = 'link text',
-                                      value = 'Evolución de los Precios Externos')
+                                      value = 'Evoluci�n de los Precios Externos')
 boton_evo_p_ext$clickElement()
 Sys.sleep(1)
 
@@ -62,10 +62,10 @@ Sys.sleep(1)
 oleaginosas_years <- driver$findElements(using = 'css selector',
                                              value = '#collapsee9829117d9288d8fb980211b3ad720f5 .panel-group div a')
 
-#Hago una lista con todos los href de cada Año
+#Hago una lista con todos los href de cada A�o
 table_links <- lapply(oleaginosas_years,function(year) year$getElementAttribute('href'))
 table_links <- table_links[seq(1, length(table_links), 2)] #Me quedo solo con los impares porque se repiten
-#Hago lo mismo que antes pero con el texto de los <a>, es decir los Años
+#Hago lo mismo que antes pero con el texto de los <a>, es decir los A�os
 table_links_years <- lapply(oleaginosas_years,function(year) year$getElementText())
 table_links_years <- table_links_years[seq(1, length(table_links_years), 2)]
 
@@ -95,7 +95,7 @@ tabla_ppal <- function(link){
   return(data.frame(Reduce(rbind, filas)))
 }
 
-read_html_table <- function(link, Año){
+read_html_table <- function(link, A�o){
   content <- read_html(link)
   tablas <- content %>% html_table(fill = T)
   first_table <- tablas[[length(tablas)]]
@@ -117,10 +117,10 @@ read_html_table <- function(link, Año){
   
   tabla$Mes <- 1:nrow(tabla)
   
-  Año <- as.integer(Año)
+  A�o <- as.integer(A�o)
   
-  tabla$Año <- rep.int(Año, length(tabla$Mes))
-  tabla$Fecha <- lapply(tabla$Mes, function(mes) paste(Año, mes, "01", sep = "-")) %>%
+  tabla$A�o <- rep.int(A�o, length(tabla$Mes))
+  tabla$Fecha <- lapply(tabla$Mes, function(mes) paste(A�o, mes, "01", sep = "-")) %>%
     unlist %>%
     as.Date()
   return (tabla[, c(16, 1, 17, 2:15)])
@@ -132,7 +132,7 @@ toString(table_links[[5]])
 
 lista_de_tablas <-  List(for (idx in 1:length(table_links)) read_html_table(toString(table_links[[idx]]), table_links_years[[idx]]))
 
-
+tabla_ppal("https://www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/areas/granos/_archivos/000057_Precios%20Internacionales/000030_Evoluci%C3%B3n%20de%20los%20Precios%20Externos/000002_Oleaginosas%20(Mensual%20en%20u$s-tn)/099998_2022.php")
 
 driver$close()
 
