@@ -5,7 +5,7 @@ date: "15/3/2022"
 output: html_document
 ---
 
-Scraping [Banco Mundial](https://www.worldbank.org/en/research/commodity-markets#1).
+Scraping de la "*pink sheet*" del [Banco Mundial](https://www.worldbank.org/en/research/commodity-markets#1).
 
 ## Librerías
 
@@ -23,7 +23,7 @@ library(readxl)
 
 ## Servidor
 
-```{r , echo = T, results = 'hide'}
+```{r , echo = T, results = 'hide', message = F}
 link = "https://www.worldbank.org/en/research/commodity-markets#1"
 
 eCaps <- list(
@@ -66,7 +66,7 @@ Nos interesan algunos de los datos. No todos.
 
 -   Eliminar todos los M que hacen referencia al mes por "-" para luego agregarle "-01" y así convertirlo a un formato fecha manipulable.
 
-```{r abrir_navegador, echo = T, results = 'hide'}
+```{r abrir_navegador, echo = T, message = F, warning = F, results = 'hide'}
 BM <- read_excel("./CMO-Historical-Data-Monthly.xlsx", sheet = "Monthly Prices", skip = 4, col_names = F)
 BM_header <- BM[c(1,2), ]
 BM_header <- rbind(BM_header, row3 = apply(BM_header, 2, paste0, collapse = " "))
@@ -87,26 +87,45 @@ BM_DF$Fecha <- lapply(BM_DF$Fecha, function(mes) paste(mes, "01", sep = "-")) %>
 
 ```
 
-## Outliers
-
-Hay que ver qué se quiere graficar. El gas natural licuado es una buena opción para empezar.
-
-```{r fig.width=11, fig.height=8}
-# ggplot(data = BM_DF) + 
-#   geom_boxplot(mapping = aes(x = Mercado, y = Precio, fill = Mercado)) + 
-#   facet_wrap(~ Producto, nrow = 2) +
-#   theme_light()+
-#   theme(legend.position="none")
-#   
-```
-
 ## Gráficos
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width=9, fig.height=6, echo=F, warning = F}
 plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM_DF$'Natural gas, US ($/mmbtu)', name = 'US', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
   add_trace(y = ~BM_DF$`Natural gas, Europe ($/mmbtu)` , name = 'Europe', mode = 'lines', connectgaps = T) %>%
   add_trace(y = ~BM_DF$`Liquefied natural gas, Japan ($/mmbtu)`, name = 'Japón (gnl)', mode = 'lines', connectgaps = T)%>%
   layout(title = "Precio gas natural (dol/mmbtu)",
+         xaxis = list(title = "Fecha"),
+         yaxis = list (title = "U$D / mmbtu"))
+```
+
+```{r fig.width=9, fig.height=6, echo=F, warning = F}
+plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM_DF$`Crude oil, average ($/bbl)`, name = 'Media', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
+  add_trace(y = ~BM_DF$`Crude oil, Brent ($/bbl)` , name = 'Brent', mode = 'lines', connectgaps = T) %>%
+  add_trace(y = ~BM_DF$`Crude oil, Dubai ($/bbl)`, name = 'Dubai', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Crude oil, WTI ($/bbl)`, name = 'WTI', mode = 'lines', connectgaps = T)%>%
+  layout(title = "Petróleo crudo ($/bbl)",
+         xaxis = list(title = "Fecha"),
+         yaxis = list (title = "U$D / mmbtu"))
+```
+
+```{r fig.width=9, fig.height=6, echo=F, warning = F}
+plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM_DF$`Soybeans ($/mt)`, name = 'Soja', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
+  add_trace(y = ~BM_DF$`Soybean oil ($/mt)` , name = 'Aceite de soja', mode = 'lines', connectgaps = T) %>%
+  add_trace(y = ~BM_DF$`Maize ($/mt)`, name = 'Maíz', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Barley ($/mt)`, name = 'Cebada', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Sorghum ($/mt)`, name = 'Sorgo', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Wheat, US SRW ($/mt)`, name = 'Trigo USA SRW', mode = 'lines', connectgaps = T)%>%
+  layout(title = "Granos y oleaginosas ($/tonelada)",
+         xaxis = list(title = "Fecha"),
+         yaxis = list (title = "U$D / mmbtu"))
+```
+
+```{r fig.width=9, fig.height=6, echo=F, warning = F}
+plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM_DF$`Crude oil, average ($/bbl)`, name = 'Media', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
+  add_trace(y = ~BM_DF$`Soybean oil ($/mt)` , name = 'Aceite de soja', mode = 'lines', connectgaps = T) %>%
+  add_trace(y = ~BM_DF$`Soybean meal ($/mt)`, name = 'Harina de soja', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Sunflower oil ($/mt)`, name = 'Aceite de girasol', mode = 'lines', connectgaps = T)%>%
+  layout(title = "Derivados de granos y oleaginosas",
          xaxis = list(title = "Fecha"),
          yaxis = list (title = "U$D / mmbtu"))
 ```
