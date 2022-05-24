@@ -1,0 +1,81 @@
+---
+title: "bm sin scrap"
+author: ""
+date: "20/5/2022"
+output: html_document
+---
+```{r librerías, echo=T, message=FALSE, warning=FALSE, results='hide'}
+library(RSelenium)
+library(tidyverse)
+library(lubridate)
+library(rvest)
+library(glue)
+library(dplyr) #Para calcular la variación mensual
+library(jsonlite)
+library(plotly)
+library(readxl)
+```
+
+```{r, echo = T, results = 'hide', message = F, warning=FALSE}
+link = "https://thedocs.worldbank.org/en/doc/5d903e848db1d1b83e0ec8f744e55570-0350012021/related/CMO-Historical-Data-Monthly.xlsx"
+
+BM <- read_excel("./CMO-Historical-Data-Monthly.xlsx", sheet = "Monthly Prices", skip = 4, col_names = F)
+BM_header <- BM[c(1,2), ]
+BM_header <- rbind(BM_header, row3 = apply(BM_header, 2, paste0, collapse = " "))
+
+BM_DF <- rbind(BM_header[-c(1:2),], BM[-c(1:3),])
+
+  
+names(BM_DF) <- as.matrix(BM_DF[1, ])
+BM_DF <- BM_DF[-1, ]
+BM_DF[] <- lapply(BM_DF, function(x) type.convert(as.character(x)))
+  
+colnames(BM_DF)[1] <- 'Fecha'
+
+BM_DF$Fecha <- str_replace(BM_DF$Fecha, "M", "-")
+BM_DF$Fecha <- lapply(BM_DF$Fecha, function(mes) paste(mes, "01", sep = "-")) %>%
+  unlist %>%
+  as.Date()
+```
+
+```{r fig.width=9, fig.height=6, echo=F, warning = F}
+plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM_DF$'Natural gas, US ($/mmbtu)', name = 'US', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
+  add_trace(y = ~BM_DF$`Natural gas, Europe ($/mmbtu)` , name = 'Europe', mode = 'lines', connectgaps = T) %>%
+  add_trace(y = ~BM_DF$`Liquefied natural gas, Japan ($/mmbtu)`, name = 'Japón (gnl)', mode = 'lines', connectgaps = T)%>%
+  layout(title = "Precio gas natural (dol/mmbtu)",
+         xaxis = list(title = "Fecha"),
+         yaxis = list (title = "U$D / mmbtu"))
+```
+
+```{r fig.width=9, fig.height=6, echo=F, warning = F}
+plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM_DF$`Crude oil, average ($/bbl)`, name = 'Media', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
+  add_trace(y = ~BM_DF$`Crude oil, Brent ($/bbl)` , name = 'Brent', mode = 'lines', connectgaps = T) %>%
+  add_trace(y = ~BM_DF$`Crude oil, Dubai ($/bbl)`, name = 'Dubai', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Crude oil, WTI ($/bbl)`, name = 'WTI', mode = 'lines', connectgaps = T)%>%
+  layout(title = "Petróleo crudo ($/bbl)",
+         xaxis = list(title = "Fecha"),
+         yaxis = list (title = "U$D / mmbtu"))
+```
+
+```{r fig.width=9, fig.height=6, echo=F, warning = F}
+plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM_DF$`Soybeans ($/mt)`, name = 'Soja', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
+  add_trace(y = ~BM_DF$`Soybean oil ($/mt)` , name = 'Aceite de soja', mode = 'lines', connectgaps = T) %>%
+  add_trace(y = ~BM_DF$`Maize ($/mt)`, name = 'Maíz', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Barley ($/mt)`, name = 'Cebada', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Sorghum ($/mt)`, name = 'Sorgo', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Wheat, US SRW ($/mt)`, name = 'Trigo USA SRW', mode = 'lines', connectgaps = T)%>%
+  layout(title = "Granos y oleaginosas ($/tonelada)",
+         xaxis = list(title = "Fecha"),
+         yaxis = list (title = "U$D / mmbtu"))
+```
+
+```{r fig.width=9, fig.height=6, echo=F, warning = F}
+plot_ly(BM_DF, x = ~BM_DF$Fecha, y = ~BM_DF$`Crude oil, average ($/bbl)`, name = 'Media', type = 'scatter', mode = 'lines', connectgaps = T)%>% 
+  add_trace(y = ~BM_DF$`Soybean oil ($/mt)` , name = 'Aceite de soja', mode = 'lines', connectgaps = T) %>%
+  add_trace(y = ~BM_DF$`Soybean meal ($/mt)`, name = 'Harina de soja', mode = 'lines', connectgaps = T)%>%
+    add_trace(y = ~BM_DF$`Sunflower oil ($/mt)`, name = 'Aceite de girasol', mode = 'lines', connectgaps = T)%>%
+  layout(title = "Derivados de granos y oleaginosas",
+         xaxis = list(title = "Fecha"),
+         yaxis = list (title = "U$D / mmbtu"))
+```
+
