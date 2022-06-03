@@ -14,10 +14,12 @@ library(dplyr) #Para calcular la variación mensual
 library(jsonlite)
 library(plotly)
 library(readxl)
+library(writexl)
 ```
 
 ```{r, echo = T, results = 'hide', message = F, warning=FALSE}
 link = "https://thedocs.worldbank.org/en/doc/5d903e848db1d1b83e0ec8f744e55570-0350012021/related/CMO-Historical-Data-Monthly.xlsx"
+
 
 BM <- read_excel("./CMO-Historical-Data-Monthly.xlsx", sheet = "Monthly Prices", skip = 4, col_names = F)
 BM_header <- BM[c(1,2), ]
@@ -36,6 +38,9 @@ BM_DF$Fecha <- str_replace(BM_DF$Fecha, "M", "-")
 BM_DF$Fecha <- lapply(BM_DF$Fecha, function(mes) paste(mes, "01", sep = "-")) %>%
   unlist %>%
   as.Date()
+```
+```{r}
+#write_xlsx(BM_DF,"pinksheet.xlsx")
 ```
 
 ```{r fig.width=9, fig.height=6, echo=F, warning = F}
